@@ -49,7 +49,6 @@ class UserController extends Controller
             return response()->json(['error' => $e->getMessage()], $e->getCode());
         }
 
-        return Response(['status' => 200,'token' => []],200);
     }
 
 
