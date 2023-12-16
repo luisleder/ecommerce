@@ -14,19 +14,29 @@ class ImageURL implements ValidationRule
      */
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        $headers = get_headers($value, 1);
+        if (!filter_var($value, FILTER_VALIDATE_URL)===false) {
+            
+            $headers = get_headers($value, 1);
+    
+            if(empty($headers['Content-Type'])) {
+                $fail("The {$attribute} attribute is not an image url.");
+            }
+    
+            $content_type = $headers['Content-Type'];
+            
+            if (strpos($content_type, 'image/jpeg') !== 0 
+                && strpos($content_type, 'image/png') !== 0) {
+    
+                    $fail("The {$attribute} attribute is not an image jpeg or png.");
+            }
 
-        if(empty($headers['Content-Type'])) {
+        }else{
+
             $fail("The {$attribute} attribute is not an image url.");
+            
         }
 
-        $content_type = $headers['Content-Type'];
-        
-        if (strpos($content_type, 'image/jpeg') !== 0 
-            && strpos($content_type, 'image/png') !== 0) {
-
-                $fail("The {$attribute} attribute is not an image jpeg or png.");
-        }
 
     }
+
 }

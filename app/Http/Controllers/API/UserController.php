@@ -4,6 +4,8 @@ namespace App\Http\Controllers\API;
 
 use App\Exceptions\UserException;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\UserAuthRequest;
+use App\Http\Requests\UserRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -15,19 +17,15 @@ class UserController extends Controller
 
     /**
      * Create new login
-     * @param Request $request
+     * @param Request UserAuthRequest
+     * @response array{access_token: string, token_type: string, expires_at: string}
      * 
      */
-    public function login(Request $request)
+    public function login(UserAuthRequest $request)
     {
-        $rules = [
-            'email' => 'required|email',
-            'password' => 'required',
-        ];
-        
         try {
             
-            $request->validate($rules);
+            $request->validated();
             $credentials = $request->only('email', 'password');
             
             if (Auth::attempt($credentials)){
@@ -63,19 +61,13 @@ class UserController extends Controller
 
     /**
      * Store a newly created resource in storage.
+     * @param UserAuthRequest
      */
-    public function store(Request $request)
+    public function store(UserRequest $request)
     {
-        
-        $rules = [
-            'name' => 'required|string',
-            'email' => 'required|email|unique:users',
-            'password' => 'required|string|min:8',
-        ];
-
         try {
 
-            $request->validate($rules);
+            $request->validated();
 
             User::create([
                 'name' => $request->name,
@@ -83,9 +75,7 @@ class UserController extends Controller
                 'password' => bcrypt($request->password)
             ]);
 
-            return response()->json([
-                'message' => 'Successfully created user!'
-            ], 201);
+            return response(status:201);
 
         } catch (ValidationException $e) {
 
