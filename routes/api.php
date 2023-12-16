@@ -20,10 +20,10 @@ Route::controller(UserController::class)->group(function(){
 Route::controller(ProductController::class)->group(function(){
 
     Route::post('product','store');
-    Route::put('product','update');
     Route::get('product','index');
+    Route::put('product/{id}','update');
     Route::get('product/{id}','show');
-    Route::delete('product','destroy');
+    Route::delete('product/{id}','destroy');
 
 })->middleware("auth:api");
 
