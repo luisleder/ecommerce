@@ -17,16 +17,16 @@ Route::controller(UserController::class)->group(function(){
     
 });
 
-Route::controller(ProductController::class)->group(function(){
+Route::middleware('auth:api')->group(function () {
+    
+    Route::controller(ProductController::class)->group(function(){
+        
+        Route::post('product','store');
+        Route::get('product','index');
+        Route::put('product/{id}','update');
+        Route::get('product/{id}','show');
+        Route::delete('product/{id}','destroy');
 
-    Route::post('product','store');
-    Route::get('product','index');
-    Route::put('product/{id}','update');
-    Route::get('product/{id}','show');
-    Route::delete('product/{id}','destroy');
+    });
 
-})->middleware("auth:api");
-
-Route::fallback(function(){
-    return response()->json(['errors' => "Invalid route"], 404);
 });

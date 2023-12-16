@@ -16,7 +16,7 @@ class UserSeeder extends Seeder
         $user = User::where('email', 'dev@mail.com')->first();
         if(!$user)
         {
-            User::creating([
+            User::create([
                 'name' => 'dev',
                 'email' => 'dev@mail.com',
                 'password' => bcrypt("12345678")

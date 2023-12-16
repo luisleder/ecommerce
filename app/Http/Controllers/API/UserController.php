@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\API;
 
+use App\Exceptions\UserException;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -29,25 +30,32 @@ class UserController extends Controller
             $request->validate($rules);
             $credentials = $request->only('email', 'password');
             
-            if (Auth::attempt($credentials)) {
-                $user = Auth::user();
-                $token = $user->createToken('user token');
+            if (Auth::attempt($credentials)){
+
+                $user_id = Auth::user()->id;
+                $user = User::find($user_id);
+                $token = $user->createToken("test mailup");
+    
                 return response()->json([
                     'access_token' => $token->accessToken,
                     'token_type' => 'Bearer',                    
                     'expires_at' => Carbon::parse($token->token->expires_at)->toDateTimeString()
                 ]);
-    
-                return response()->json($token);
-            } else {
-                throw new \Exception("User or password are not valid", 404);
+
+            }else{
+
+                throw UserException::notExists();
+
             }
             
         
         } catch (ValidationException $e) {
-            return response()->json(['errors' => $e->errors()], 404);
-        } catch (\Exception $e){
-            return response()->json(['error' => $e->getMessage()], $e->getCode());
+
+            return response()->json([
+                'message' => 'Request error',
+                'errors' => $e->errors()
+            ], 404);
+
         }
 
     }
@@ -80,7 +88,12 @@ class UserController extends Controller
             ], 201);
 
         } catch (ValidationException $e) {
-            return response()->json(['errors' => $e->errors()], 404);
+
+            return response()->json([
+                'message' => 'Error in user creation',
+                'errors' => $e->errors()
+            ], 404);
+
         }
 
     }
