@@ -6,46 +6,52 @@ use App\Exceptions\ProductException;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ProductRequest;
+use App\Http\Resources\ProductResource;
 use App\Models\Product;
-use App\Rules\ImageURL;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class ProductController extends Controller
 {
-
     /**
-     * Get all products by pagination
-     * @return Response Paginate of product
+     * List available Product items.
+     * @response array{
+     *  data: ProductResource[], 
+     *  links: array{first: string, last: string, prev: string, next: string}, 
+     *  meta: array{current_page: integer, from: integer, last_page: integer, links: array{}} 
+     * }
+     * @status 200
      */
+
     public function index()
     {
-        $products = Product::simplePaginate(20);
-        return response()->json($products, 200);
+        // get the produt items 10 by page
+        $products = Product::paginate(10);
 
+        // return the ProductCollection
+        return ProductResource::collection($products);
     }
 
     /**
      * Create a new product
-     * @param Request
-     * @return Response 
+     * @param ProductRequest $request
+     * @return ProductResource
+     * @response {data: ProductResource}
+     * @status 201
+     * 
      */
-    public function store(Request $request)
+    public function store(ProductRequest $request): ProductResource
     {
-        $rules = [
-            'name' => ['required'],
-            'description' => ['required'],
-            'image' => ['required','url', new ImageURL],
-            'brand' => ['required'],
-            'price' => ['required','numeric','regex:/^\d+(\.\d{1,2})?$/'],
-            'price_sale' => ['required','numeric','regex:/^\d+(\.\d{1,2})?$/'],
-            'category' => ['required'],
-            'stock' => ['required','integer']
-        ];
-        
         try {
 
-            $request->validate($rules);
-            $product = Product::create($request->only(array_keys($rules)));
-            return response()->json($product, 201);
+            // Validate the request data
+            $validatedData = $request->validated();
+            
+            // create the product
+            $product = Product::create($validatedData);
+
+            // return the last resource created
+            return new ProductResource($product);
 
         } catch (ValidationException $e) {
 
@@ -60,72 +66,53 @@ class ProductController extends Controller
 
     /**
      * Find a product by id
-     * @param $id
-     * @return Response
+     * @param integer $id
+     * @return ProductResource
+     * @status 200
+     * @response {data: ProductResouser }
      */
-    public function show($id)
+    public function show($id): ProductResource
     {
-        $product = Product::find($id);
-        
-        if ($product) {
+        try {
 
-            return response()->json($product, 200);
-
-        } else {
+            // find and return the resource
+            return new ProductResource(Product::findOrFail($id));
             
+        }catch(ModelNotFoundException $e){
+
             throw ProductException::notExist();
-            
+
         }
     }
 
     /**
      * Update product from db
-     * @param Request $request
-     * @param Int $id
-     * @return Resonpe JSON
+     * @param ProductRequest $request
+     * @param integer $id
+     * @status 204
      */
-    public function update(Request $request, $id)
+    public function update(ProductRequest $request, $id)
     {
-        // Defined rules to validate
-        $rules = [
-            'name' => ['required'],
-            'description' => ['required'],
-            'image' => ['required','url', new ImageURL],
-            'brand' => ['required'],
-            'price' => ['required','numeric','regex:/^\d+(\.\d{1,2})?$/'],
-            'price_sale' => ['required','numeric','regex:/^\d+(\.\d{1,2})?$/'],
-            'category' => ['required'],
-            'stock' => ['required','integer']
-        ];
-
         try {
             
             // Check if the id exists 
-            if (Product::where('id', $id)->exists()) {
-                
-                // Validate the request data
-                $validatedData = $request->validate($rules);
+            $product = Product::findOrFail($id);
+            
+            // Validate the request data
+            $validatedData = $request->validated();
 
-                // Find the product by ID
-                $product = Product::find($id);
+            // Update the product attributes
+            $product->fill($validatedData);
+            
+            // Save the updated product
+            $product->save();
 
-                // Update the product attributes
-                $product->fill($validatedData);
-                
-                // Save the updated product
-                $product->save();
+            return response()->noContent();
 
-                return response()->json([
-                    'message' => 'Product updated successfully',
-                    'product' => $product
-                ]);
+        }catch(ModelNotFoundException $e){
 
-            } else {
-    
-                throw ProductException::notExist();
-    
-            }
-        
+            throw ProductException::notExist();
+
         } catch (ValidationException $e) {
 
             return response()->json([
@@ -139,21 +126,22 @@ class ProductController extends Controller
 
     /**
      * Delete product from db
-     * @param $id
-     * @return Response Json
+     * @param integer $id
+     * @status 204
      */
     public function destroy($id)
     {
-        if(Product::where('id', $id)->exists()) {
+        
+        try {
+            // Check if the id exists 
+            $product = Product::findOrFail($id);
 
-            $product = Product::find($id);
+            // confirm destroy product
             $product->delete();
 
-            return response()->json([
-              "message" => "product record deleted"
-            ], 202);
+            return response()->noContent();
 
-        } else {
+        }catch(ModelNotFoundException $e){
 
             throw ProductException::notExist();
         
