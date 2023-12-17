@@ -7,7 +7,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\UserAuthRequest;
 use App\Http\Requests\UserRequest;
 use App\Models\User;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use Illuminate\Validation\ValidationException;
@@ -17,7 +16,7 @@ class UserController extends Controller
 
     /**
      * Create new login
-     * @param Request UserAuthRequest
+     * @param UserAuthRequest
      * @response array{access_token: string, token_type: string, expires_at: string}
      * 
      */
@@ -61,7 +60,8 @@ class UserController extends Controller
 
     /**
      * Store a newly created resource in storage.
-     * @param UserAuthRequest
+     * @param UserRequest
+     * @status 204
      */
     public function store(UserRequest $request)
     {

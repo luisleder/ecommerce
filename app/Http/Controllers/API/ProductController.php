@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\API;
 
 use App\Exceptions\ProductException;
-use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ProductRequest;
