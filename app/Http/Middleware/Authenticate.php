@@ -14,27 +14,7 @@ class Authenticate extends Middleware
      */
     protected function redirectTo(Request $request): ?string
     {
-        if (!$request->expectsJson()) {
-            return route('login');
-        }
+        return route('login');
     }
 
-    // Add new method to handler unauthenticated users
-    protected function unauthenticated($request, array $guards)
-    {
-        abort(response()->json([
-            'message' => 'UnAuthenticated',
-        ], 401));
-    }
-
-    // Handle an incoming request.
-    public function handle($request, Closure $next, ...$guards)
-    {
-        // validate the header 'Authorization'
-        if (!$request->header('Authorization')) {
-            return response()->json(['message' => 'Unauthenticated'], 401);
-        }
-
-        return parent::handle($request, $next, ...$guards);
-    }
 }

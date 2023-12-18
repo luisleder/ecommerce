@@ -10,9 +10,28 @@ use App\Http\Controllers\API\UserController;
 |--------------------------------------------------------------------------
 */
 
+
+/**
+ * @group Authentication
+ *
+ * APIs for user authentication.
+ */
+Route::group([
+    'as' => 'passport.',
+    'prefix' => config('passport.path', 'oauth'),
+    'namespace' => '\Laravel\Passport\Http\Controllers',
+], function () {
+    
+    Route::post('/token', [
+        'uses' => 'AccessTokenController@issueToken',
+        'as' => 'token',
+        'middleware' => 'throttle',
+    ]);
+
+});
+
 Route::controller(UserController::class)->group(function(){
     
-    Route::post('token','login');
     Route::post('register','store');
     
 });

@@ -14,5 +14,11 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    return response()->json([
+
+    ], 404);
 });
+
+Route::get('login', function(){
+    return response(status: 404);
+})->name('login');
